@@ -25,7 +25,7 @@ public class TransacoesController : ControllerBase
             return NotFound();
         }
 
-        if (transacao.Tipo.Equals("saque"))
+        if (transacao.Tipo.ToLower().Equals("saque"))
         {
             if (transacao.Valor > contaBancaria.Saldo){
                 return Conflict("Saldo insuficiente.");}
@@ -34,6 +34,17 @@ public class TransacoesController : ControllerBase
                 Console.WriteLine("🚩 ALERTA DE SEGURANÇA: Transação de alto valor detectada para a conta [Número da Conta]!");
             }
             contaBancaria.Saldo = contaBancaria.Saldo - transacao.Valor;
+            context.ContaBancarias.Update(contaBancaria);
+            context.Transacoes.Add(transacao);
+            context.SaveChanges();
+            return Ok();
+        }else if (transacao.Tipo.ToLower().Equals("deposito"))
+        {
+            if (transacao.Valor <= 0)
+            {
+                return BadRequest("Não é possível depositar esse valor");
+            }
+            contaBancaria.Saldo = contaBancaria.Saldo + transacao.Valor;
             context.ContaBancarias.Update(contaBancaria);
             context.Transacoes.Add(transacao);
             context.SaveChanges();
